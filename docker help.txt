@@ -1,0 +1,38 @@
+Local Running
+
+docker build -t cureya_api:v1 .
+docker run -p 8000:8000 cureya_api:v1
+'HOST': 'host.docker.internal',
+sudo yum -y install gcc             # For mysqlclient install
+
+Deploy on Heroku
+heroku container:login
+heroku create cureya_heroku
+heroku container:push web -a=cureya_heroku
+heroku config:add ALLOWED_HOSTS=* -a cureya_heroku
+heroku config:get ALLOWED_HOSTS -a cureya_heroku
+heroku container:release -a cureya_heroku web
+heroku open -a=cureya_heroku
+
+Upload to Hub
+docker login
+docker tag cureya_api:v1 jrahul1112/cureya_api:latest
+docker push jrahul1112/cureya_api:latest
+
+Error while Deploy
+heroku logs --tail -a cureya_heroku
+
+
+heroku create django-tpc
+heroku container:push web -a=django-tpc
+heroku config:add ALLOWED_HOSTS=* -a django-tpc
+heroku config:get ALLOWED_HOSTS -a django-tpc
+heroku container:release -a django-tpc web
+heroku open -a=django-tpc
+
+docker exec -it 80cb27e68b7d python manage.py createsuperuser
+docker exec -it <container_name> /bin/bash
+
+docker compose:
+docker-compose build
+docker-compose up

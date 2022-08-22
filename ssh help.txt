@@ -1,0 +1,122 @@
+https://www.digitalocean.com/community/tutorials/how-to-set-up-django-with-postgres-nginx-and-gunicorn-on-ubuntu-20-04
+
+# Connect to server
+chmod 400 rahulssh.pem
+ssh -i "rahulssh.pem" ubuntu@43.204.230.7
+
+# Update and install required packages
+sudo apt update
+sudo apt install python3-pip python3-dev libpq-dev nginx curl
+
+# Make a project folder and cd
+mkdir firstsshproject
+cd firstsshproject
+
+# Clone repository in the folder created
+git clone https://github.com/JRahul11/Jenkins-CI-CD-Pipeline.git
+
+# Install pip and make virtual env
+sudo -H pip3 install --upgrade pip
+sudo -H pip3 install virtualenv
+virtualenv env
+source env/bin/activate
+
+# Install project dependencies
+cd Jenkins-CI-CD-Pipeline
+pip install -r requirements.txt
+
+# Check if project is working
+sudo ufw allow 8000
+python manage.py runserver 0.0.0.0:8000
+
+# Make gunicorn socket file 
+sudo nano /etc/systemd/system/gunicorn.socket
+
+[Unit]
+Description=gunicorn socket
+
+[Socket]
+ListenStream=/run/gunicorn.sock
+
+[Install]
+WantedBy=sockets.target
+
+# Get project directory path and environment directory path
+pwd
+/home/ubuntu/firstsshproject/Jenkins-CI-CD-Pipeline
+cd ..
+pwd
+cd env
+/home/ubuntu/firstsshproject/env
+
+# Make gunicorn service file
+sudo nano /etc/systemd/system/gunicorn.service
+
+[Unit]
+Description=gunicorn daemon
+Requires=gunicorn.socket
+After=network.target
+
+[Service]
+User=ubuntu
+Group=www-data
+WorkingDirectory=/home/ubuntu/firstsshproject/Jenkins-CI-CD-Pipeline
+ExecStart=/home/ubuntu/firstsshproject/env/bin/gunicorn \
+          --access-logfile - \
+          --workers 3 \
+          --bind unix:/run/gunicorn.sock \
+          jenkinsproject.wsgi:application
+
+[Install]
+WantedBy=multi-user.target
+
+# Start both gunicorn files and check status
+sudo systemctl start gunicorn.socket
+sudo systemctl enable gunicorn.socket
+sudo systemctl status gunicorn.socket
+file /run/gunicorn.sock
+sudo journalctl -u gunicorn.socket
+sudo systemctl status gunicorn
+curl --unix-socket /run/gunicorn.sock localhost
+sudo systemctl status gunicorn
+
+# Check logs and restart gunicorn
+sudo journalctl -u gunicorn
+sudo systemctl daemon-reload
+sudo systemctl restart gunicorn
+
+Configure Nginx
+sudo nano /etc/nginx/sites-available/myproject
+
+server {
+    listen 80;
+    server_name 43.204.230.7;
+
+    location = /favicon.ico { access_log off; log_not_found off; }
+
+    location / {
+        include proxy_params;
+        proxy_pass http://unix:/run/gunicorn.sock;
+    }
+}
+
+sudo ln -s /etc/nginx/sites-available/myproject /etc/nginx/sites-enabled
+sudo nginx -t
+sudo systemctl restart nginx
+
+
+
+
+
+# Install MySQL on Linux AMI
+https://asvignesh.in/install-mysql-on-amazon-linux-in-aws-ec2/
+sudo yum install https://dev.mysql.com/get/mysql80-community-release-el7-5.noarch.rpm
+sudo yum install mysql-community-server
+sudo grep 'temporary password' /var/log/mysqld.log
+mysql_secure_installation
+
+
+
+
+
+

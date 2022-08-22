@@ -1,0 +1,10 @@
+rd .git /S/Q
+git init
+git add .
+git commit -m "Initial Commit"
+git remote add origin https://github.com/JRahul11/PDF_Encrypt_Decrypt_App.git
+git push -u origin master
+
+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
+
+git branch child_branch parent_branch
