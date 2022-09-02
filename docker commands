@@ -1,0 +1,15 @@
+# Creating an Docker Image
+docker build -t rahul/sampleapp:1.0
+
+# Running an image
+docker run -p 5000:8080 image_name
+
+# Create a volume
+docker volume create volume_name
+
+# Open docker container terminal
+docker exec
+
+# Run Docker Compose
+docker compose up
+docker compose stop
